@@ -18,12 +18,13 @@
 ///
 /// What is the sum of the fuel requirements for all of the modules on your spacecraft?
 
-pub fn calculate_fuel_required_for_module(module_mass: u64) -> u64 {
-    return module_mass / 3 - 2;
+pub fn naive_fuel_required_for_module(module_mass: u64) -> u64 {
+    let partial_result = module_mass / 3;
+    return if partial_result >= 2 { partial_result - 2 } else { 0 };
 }
 
-pub fn calculate_total_fuel_required_for_modules(masses: &[u64]) -> u64 {
-    return masses.into_iter().map(|m| calculate_fuel_required_for_module(*m)).sum();
+pub fn naive_total_fuel_required_for_modules(masses: &[u64]) -> u64 {
+    return masses.into_iter().map(|m| naive_fuel_required_for_module(*m)).sum();
 }
 
 #[cfg(test)]
@@ -32,10 +33,10 @@ mod tests {
 
     #[test]
     fn given_examples_work() {
-        assert_eq!(calculate_fuel_required_for_module(12), 2);
-        assert_eq!(calculate_fuel_required_for_module(14), 2);
-        assert_eq!(calculate_fuel_required_for_module(1969), 654);
-        assert_eq!(calculate_fuel_required_for_module(100756), 33583);
+        assert_eq!(naive_fuel_required_for_module(12), 2);
+        assert_eq!(naive_fuel_required_for_module(14), 2);
+        assert_eq!(naive_fuel_required_for_module(1969), 654);
+        assert_eq!(naive_fuel_required_for_module(100756), 33583);
     }
 
     #[test]
@@ -49,6 +50,6 @@ mod tests {
                                .map(|line| line.parse::<u64>())
                                .filter_map(Result::ok)
                                .collect();
-        assert_eq!(calculate_total_fuel_required_for_modules(&masses), 3317970);
+        assert_eq!(naive_total_fuel_required_for_modules(&masses), 3317970);
     }
 }
