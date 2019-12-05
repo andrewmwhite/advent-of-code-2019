@@ -79,20 +79,42 @@ pub fn total_fuel_required_for_modules(masses: &[u64]) -> u64 {
     return masses.into_iter().map(|m| fuel_required_for_module(*m)).sum();
 }
 
+#[derive(Debug)]
+pub enum Error {
+    IoError(std::io::Error),
+    ParseIntError(std::num::ParseIntError),
+}
+
+impl From<std::io::Error> for Error {
+    fn from(e: std::io::Error) -> Self {
+        Error::IoError(e)
+    }
+}
+
+impl From<std::num::ParseIntError> for Error {
+    fn from(e: std::num::ParseIntError) -> Self {
+        Error::ParseIntError(e)
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn get_parsed_input() -> Vec<u64> {
+    fn get_parsed_input() -> Result<Vec<u64>, Error> {
         use std::io::{BufRead,BufReader};
         use std::fs;
 
-        let fs = BufReader::new(fs::File::open("data/day1.input").unwrap());
-        fs.lines()
-          .filter_map(Result::ok)
-          .map(|line| line.parse::<u64>())
-          .filter_map(Result::ok)
-          .collect()
+        Ok(BufReader::new(fs::File::open("data/day1.input")?)
+            .lines()
+            .map(|line| line?.parse::<u64>().map_err(|e| e.into()))
+            .collect::<Result<Vec<u64>, Error>>()?)
     }
 
     #[test]
@@ -105,7 +127,7 @@ mod tests {
 
     #[test]
     fn it_solves_part1() {
-        let masses = get_parsed_input();
+        let masses = get_parsed_input().unwrap();
         assert_eq!(naive_total_fuel_required_for_modules(&masses), 3317970);
     }
 
@@ -119,7 +141,7 @@ mod tests {
 
     #[test]
     fn it_solves_part2() {
-        let masses = get_parsed_input();
+        let masses = get_parsed_input().unwrap();
         assert_eq!(total_fuel_required_for_modules(&masses), 4974073);
     }
 }
